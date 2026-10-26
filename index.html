@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AZIC — Motor application (easy start)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --navy: #16303D;
+    --navy-2: #1E3F4F;
+    --teal: #0D9488;
+    --teal-dark: #0F766E;
+    --green: #2ED88E;
+    --orange: #F18710;
+    --red: #F24456;
+    --ink-50: #F8FAFC;
+    --ink-100: #F1F5F9;
+    --ink-200: #E2E8F0;
+    --ink-300: #CBD5E1;
+    --ink-400: #94A3B8;
+    --ink-500: #64748B;
+    --ink-700: #334155;
+    --ink-900: #0F172A;
+    --white: #fff;
+    --shadow: 0 1px 2px rgba(22,48,61,.06), 0 1px 8px rgba(22,48,61,.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: Poppins, system-ui, sans-serif;
+    background: var(--ink-50);
+    color: var(--ink-900);
+    font-size: 15px;
+    line-height: 1.45;
+  }
+  button, input, select, textarea { font-family: inherit; }
+  button { cursor: pointer; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+
+  .proto {
+    height: 32px;
+    background: #0d1e26;
+    color: #8a979e;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+    font-size: 12px;
+  }
+  .proto strong { color: var(--green); font-weight: 600; }
+  .proto a { color: #d4ffef; text-decoration: none; }
+  .proto a:hover { text-decoration: underline; }
+
+  .app { height: calc(100% - 32px); display: flex; flex-direction: column; overflow: hidden; }
+
+  header.app-h {
+    height: 56px;
+    background: var(--white);
+    border-bottom: 1px solid var(--ink-200);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  .logo {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: var(--navy); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px;
+  }
+  .brand-name { font-size: 15px; font-weight: 600; line-height: 1.2; }
+  .brand-sub { font-size: 12px; color: var(--ink-500); }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 600;
+  }
+  .pill-idle { background: var(--ink-100); color: var(--ink-500); }
+  .pill-draft { background: #FEF3C7; color: #92400E; }
+  .pill-done { background: #D1FAE5; color: #047857; }
+  .user { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--navy); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600;
+  }
+  .ghost {
+    height: 36px; padding: 0 12px; border-radius: 8px;
+    border: 1px solid var(--ink-200); background: #fff;
+    color: var(--ink-700); font-size: 13px; font-weight: 500;
+  }
+  .ghost:hover { background: var(--ink-50); }
+
+  .body { flex: 1; display: flex; min-height: 0; overflow: hidden; }
+
+  .stepper {
+    flex-shrink: 0;
+    height: 56px;
+    background: #fff;
+    border-bottom: 1px solid var(--ink-200);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+  }
+  .steps {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-400);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .step-line {
+    flex: 1;
+    height: 2px;
+    background: var(--ink-200);
+    margin: 0 10px;
+    min-width: 16px;
+  }
+  .step-line.done { background: var(--green); }
+  .step .n {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--ink-100); color: var(--ink-500);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; flex-shrink: 0;
+  }
+  .step.current { color: var(--navy); font-weight: 600; }
+  .step.current .n { background: var(--teal); color: #fff; }
+  .step.done { color: var(--ink-700); }
+  .step.done .n { background: var(--green); color: var(--navy); }
+
+  .col-guide {
+    width: 300px; min-width: 260px;
+    background: #fff;
+    border-right: 1px solid var(--ink-200);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .col-main { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--ink-50); overflow: hidden; }
+  .col-side {
+    width: 280px; min-width: 240px;
+    background: #fff;
+    border-left: 1px solid var(--ink-200);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+
+  .panel-h {
+    padding: 14px 18px 10px;
+    border-bottom: 1px solid var(--ink-200);
+    flex-shrink: 0;
+  }
+  .panel-h h2 { font-size: 16px; font-weight: 600; }
+  .panel-h p { font-size: 13px; color: var(--ink-500); margin-top: 2px; }
+  .pane { flex: 1; overflow: hidden; padding: 14px 18px; min-height: 0; }
+  .col-main .pane { overflow-y: auto; overflow-x: hidden; }
+  .app.is-landing .col-main .pane { padding: 12px 16px; }
+  .app.is-landing .main-bar { display: none; }
+  .landing-page {
+    height: 100%;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+  }
+  .landing-card {
+    width: 100%;
+    max-width: 560px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .landing-card h3 { margin-bottom: 4px; }
+  .faq-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .faq-row .help-q { width: auto; margin: 0; padding: 6px 10px; font-size: 12px; }
+
+  label.fld { display: block; margin-bottom: 10px; }
+  label.fld span.l { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  label.fld span.hint { display: block; font-size: 12px; color: var(--ink-500); font-weight: 400; margin-top: 3px; }
+  .inp, select.inp {
+    width: 100%; height: 40px; padding: 0 12px;
+    border: 1px solid var(--ink-200); border-radius: 8px;
+    font-size: 14px; background: #fff; color: var(--ink-900);
+  }
+  .inp:focus, select.inp:focus, textarea.inp:focus {
+    outline: 2px solid #99F6E4; border-color: var(--teal);
+  }
+  textarea.inp { height: auto; padding: 10px 12px; resize: vertical; }
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    height: 40px; padding: 0 16px; border-radius: 8px;
+    font-size: 14px; font-weight: 600; border: 0;
+  }
+  .btn-primary { background: var(--teal); color: #fff; width: 100%; }
+  .btn-primary:hover { background: var(--teal-dark); }
+  .btn-navy { background: var(--navy); color: #fff; }
+  .btn-navy:hover { background: var(--navy-2); }
+  .btn-sec {
+    background: #fff; color: var(--ink-700);
+    border: 1px solid var(--ink-200); width: 100%;
+  }
+  .btn-sec:hover { background: var(--ink-50); }
+  .btn-sm { height: 36px; font-size: 13px; padding: 0 12px; width: auto; }
+  .stack { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+
+  .demo {
+    margin-top: 10px; padding: 10px 12px;
+    background: var(--ink-50); border: 1px dashed var(--ink-300); border-radius: 10px;
+  }
+  .demo p { font-size: 12px; color: var(--ink-500); margin-bottom: 8px; }
+  .chip {
+    display: inline-flex; align-items: center;
+    padding: 8px 12px; border-radius: 8px;
+    background: #fff; border: 1px solid var(--ink-200);
+    font-size: 13px; font-weight: 500; text-align: left; width: 100%;
+  }
+  .chip:hover { border-color: var(--teal); }
+
+  .help-q {
+    display: block; width: 100%; text-align: left;
+    padding: 8px 10px; margin-bottom: 6px;
+    border: 1px solid var(--ink-200); border-radius: 8px;
+    background: #fff; font-size: 13px; color: var(--ink-700);
+  }
+  .help-q:hover { border-color: var(--teal); color: var(--navy); }
+  .msg-ai {
+    background: #F0FDFA; border: 1px solid #CCFBF1;
+    border-radius: 10px; padding: 12px; font-size: 13px; color: var(--ink-700);
+    margin-bottom: 10px;
+  }
+  .msg-user {
+    background: var(--navy); color: #fff;
+    border-radius: 10px; padding: 10px 12px; font-size: 13px;
+    margin: 0 0 10px auto; max-width: 92%;
+  }
+
+  .main-bar {
+    height: 48px; background: #fff; border-bottom: 1px solid var(--ink-200);
+    display: flex; align-items: center; padding: 0 24px; gap: 16px; flex-shrink: 0;
+    font-size: 13px; color: var(--ink-500);
+  }
+  .src {
+    font-size: 11px; font-weight: 600;
+    padding: 3px 8px; border-radius: 6px;
+    background: #F0FDFA; color: var(--teal-dark); border: 1px solid #CCFBF1;
+  }
+  .banner {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 12px 14px; border-radius: 10px; margin-bottom: 16px;
+    background: #F0FDFA; border: 1px solid #99F6E4;
+    font-size: 13px;
+  }
+  .banner.warn { background: #FFFBEB; border-color: #FDE68A; }
+  .card {
+    background: #fff; border: 1px solid var(--ink-200);
+    border-radius: 12px; padding: 16px 18px; margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    border-left: 4px solid var(--teal);
+  }
+  .card h3 { font-size: 16px; font-weight: 600; }
+  .card .meta { font-size: 12px; color: var(--ink-500); margin-top: 2px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin-top: 14px; }
+  .empty {
+    height: 100%; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; padding: 24px;
+    color: var(--ink-500);
+  }
+  .empty h2 { font-size: 22px; color: var(--ink-900); font-weight: 600; margin-bottom: 8px; }
+  .empty p { max-width: 420px; font-size: 15px; }
+
+  .plans { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .plan {
+    text-align: left; padding: 14px; border-radius: 10px;
+    border: 2px solid var(--ink-200); background: #fff;
+  }
+  .plan:hover { border-color: #99F6E4; }
+  .plan.on { border-color: var(--teal); background: #F0FDFA; }
+  .plan .price { font-size: 18px; font-weight: 700; margin: 8px 0 4px; }
+  .plan ul { font-size: 12px; color: var(--ink-600); padding-left: 16px; }
+  .addon {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0; border-top: 1px solid var(--ink-100); font-size: 13px;
+  }
+  .toggle {
+    width: 44px; height: 24px; border-radius: 99px; border: 0;
+    background: var(--ink-200); position: relative;
+  }
+  .toggle.on { background: var(--teal); }
+  .toggle i {
+    position: absolute; top: 3px; left: 3px;
+    width: 18px; height: 18px; border-radius: 50%; background: #fff;
+    transition: left .15s;
+  }
+  .toggle.on i { left: 23px; }
+
+  .line { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; }
+  .line.neg { color: var(--teal-dark); }
+  .total { display: flex; justify-content: space-between; font-size: 16px; font-weight: 700; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--ink-200); }
+
+  .foot {
+    border-top: 1px solid var(--ink-200); background: #fff;
+    padding: 12px 24px; display: flex; align-items: center; gap: 16px; flex-shrink: 0;
+  }
+
+  .attn {
+    border: 1px solid var(--ink-200); border-radius: 10px;
+    padding: 14px; margin-bottom: 10px; background: #fff;
+  }
+  .attn.need { border-color: #FDE68A; background: #FFFBEB; }
+  .tag { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-400); }
+  .attn.need .tag { color: #B45309; }
+  .attn h4 { font-size: 14px; margin: 4px 0 6px; }
+  .attn p { font-size: 13px; color: var(--ink-700); }
+
+  .overlay {
+    position: fixed; inset: 0; background: rgba(15,23,42,.4);
+    display: none; align-items: center; justify-content: center; z-index: 50; padding: 24px;
+  }
+  .overlay.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 16px; width: 100%; max-width: 480px;
+    padding: 28px; box-shadow: 0 20px 50px rgba(22,48,61,.2);
+  }
+  .modal h3 { font-size: 20px; margin-bottom: 8px; }
+  .modal p { font-size: 14px; color: var(--ink-700); margin-bottom: 12px; }
+  .welcome { max-width: 560px; }
+  .welcome ol { margin: 16px 0 20px 20px; color: var(--ink-700); }
+  .welcome li { margin-bottom: 8px; }
+
+  #toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--navy); color: #fff; padding: 10px 16px;
+    border-radius: 8px; font-size: 14px; display: none; z-index: 60;
+  }
+  .spin {
+    width: 16px; height: 16px; border: 2px solid #fff; border-top-color: transparent;
+    border-radius: 50%; animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .fade { animation: fade .25s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .suggest {
+    border: 1px solid var(--ink-200); border-radius: 8px; margin-top: 4px; overflow: hidden;
+  }
+  .suggest button {
+    display: block; width: 100%; text-align: left; padding: 10px 12px;
+    background: #fff; border: 0; border-bottom: 1px solid var(--ink-100); font-size: 13px;
+  }
+  .suggest button:last-child { border-bottom: 0; }
+  .suggest button:hover { background: var(--ink-50); }
+  .suggest small { display: block; color: var(--ink-500); font-size: 12px; }
+
+  /* ---------- coachmark tour ---------- */
+  .cm-root { position: fixed; inset: 0; z-index: 90; display: none; }
+  .cm-root.show { display: block; }
+  .cm-block { position: absolute; inset: 0; }
+  .cm-hole {
+    position: absolute; border-radius: 12px;
+    box-shadow: 0 0 0 9999px rgba(13,30,38,.60);
+    border: 2px solid var(--green);
+    pointer-events: none;
+    transition: top .3s cubic-bezier(.4,0,.2,1), left .3s cubic-bezier(.4,0,.2,1),
+                width .3s cubic-bezier(.4,0,.2,1), height .3s cubic-bezier(.4,0,.2,1);
+  }
+  .cm-hole.no-ring { border-color: transparent; }
+  .cm-card {
+    position: absolute; width: 352px; background: #fff;
+    border-radius: 14px; overflow: hidden;
+    box-shadow: 0 20px 44px rgba(13,30,38,.30);
+    transition: top .3s cubic-bezier(.4,0,.2,1), left .3s cubic-bezier(.4,0,.2,1);
+  }
+  .cm-art {
+    height: 132px; padding: 0 22px;
+    background: linear-gradient(140deg, #34E29A 0%, #0D9488 62%, #0F766E 100%);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cm-body { padding: 14px 18px 16px; }
+  .cm-head { display: flex; align-items: baseline; gap: 12px; }
+  .cm-head h4 { font-size: 15px; font-weight: 600; color: var(--ink-900); flex: 1; min-width: 0; }
+  .cm-count { margin-left: auto; font-size: 12px; font-weight: 500; color: var(--ink-400); white-space: nowrap; }
+  .cm-body p { font-size: 13px; color: var(--ink-500); margin-top: 7px; }
+  .cm-dots { display: flex; align-items: center; gap: 5px; margin-top: 16px; }
+  .cm-acts { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+  .cm-acts .cm-text { margin-right: auto; }
+  .cm-dots i { display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--ink-200); transition: width .2s; }
+  .cm-dots i.on { width: 16px; border-radius: 99px; background: var(--teal); }
+  .cm-btn {
+    height: 34px; padding: 0 13px; border-radius: 8px; font-size: 13px; font-weight: 600;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    border: 1px solid transparent; white-space: nowrap; flex-shrink: 0;
+  }
+  .cm-ghost { background: #fff; border-color: var(--ink-200); color: var(--ink-700); }
+  .cm-ghost:hover { background: var(--ink-50); }
+  .cm-solid { background: var(--navy); color: #fff; }
+  .cm-solid:hover { background: var(--navy-2); }
+  .cm-text { background: none; border: 0; color: var(--ink-500); font-size: 13px; font-weight: 500;
+    padding: 0 2px; white-space: nowrap; flex-shrink: 0; }
+  .cm-text:hover { color: var(--navy); text-decoration: underline; }
+  .cm-pop { animation: cmpop .22s ease; }
+  @keyframes cmpop { from { opacity: 0; transform: translateY(8px) scale(.985); } to { opacity: 1; transform: none; } }
+
+  /* ── Coach marks ── */
+  #coachRoot { display: none; }
+  #coachRoot.on { display: block; }
+  .coach-dim {
+    position: fixed; inset: 0; z-index: 80;
+    background: transparent; cursor: default;
+  }
+  .coach-spot {
+    position: fixed; z-index: 81; pointer-events: none;
+    border-radius: 12px;
+    box-shadow: 0 0 0 4px rgba(13,148,136,.55), 0 0 0 9999px rgba(13,30,38,.52);
+    transition: top .22s ease, left .22s ease, width .22s ease, height .22s ease;
+  }
+  .coach-card {
+    position: fixed; z-index: 82; width: min(340px, calc(100vw - 32px));
+    background: #fff; border-radius: 12px; padding: 16px 16px 14px;
+    box-shadow: 0 12px 40px rgba(22,48,61,.28);
+    border: 1px solid var(--ink-200);
+  }
+  .coach-kicker {
+    font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--teal-dark); margin-bottom: 6px;
+  }
+  .coach-card h3 { font-size: 16px; margin-bottom: 6px; }
+  .coach-card p { font-size: 13px; color: var(--ink-700); margin-bottom: 14px; line-height: 1.45; }
+  .coach-row { display: flex; align-items: center; gap: 8px; }
+  .coach-dots { display: flex; gap: 5px; margin-right: auto; }
+  .coach-dots i {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--ink-200); display: block;
+  }
+  .coach-dots i.on { background: var(--teal); }
+  .coach-card .btn { height: 34px; padding: 0 12px; font-size: 13px; }
+  .coach-skip { border: 0; background: none; color: var(--ink-500); font-size: 13px; font-weight: 500; padding: 6px 8px; }
+  .coach-skip:hover { color: var(--navy); }
+  .proto button.linkish {
+    background: none; border: 0; color: #d4ffef; font-size: 12px; font-family: inherit; cursor: pointer; padding: 0;
+  }
+  .proto button.linkish:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="proto">
+  <strong>Poojitha prototype</strong>
+  Easy start — form first, AI fills in the background
+  <span style="margin-left:auto"></span>
+  <button class="linkish" type="button" id="replayCoach">Replay onboarding</button>
+  <a href="file:///Users/in04509/Documents/Claude/Projects/AZIC/ai-workspace-refined.html">Open manager’s original</a>
+</div>
+
+<div class="app" id="appRoot">
+  <header class="app-h">
+    <div class="logo">Az</div>
+    <div>
+      <div class="brand-name">Azentio Insure Core</div>
+      <div class="brand-sub">Motor commercial · new application</div>
+    </div>
+    <div id="recordMeta" style="margin-left:12px"></div>
+    <div class="user">
+      <button class="ghost" id="tourBtn" type="button">Replay tour</button>
+      <button class="ghost" id="auditBtn" type="button">Activity log</button>
+      <button class="ghost" id="resetBtn" type="button">New application</button>
+      <div class="avatar">PS</div>
+      <div>
+        <div style="font-size:13px;font-weight:600">Priya Sharma</div>
+        <div style="font-size:12px;color:var(--ink-500)">Sr. Underwriter · Motor</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="stepper" id="stepperBar"></div>
+
+  <div class="body">
+    <section class="col-guide" id="coach-guide">
+      <div class="panel-h">
+        <h2 id="guideTitle">Start the application</h2>
+        <p id="guideSub">Fill what you already know. You do not need to write to the AI.</p>
+      </div>
+      <div class="pane" id="guideScroll"></div>
+    </section>
+
+    <section class="col-main" id="coach-main">
+      <div class="main-bar" id="mainBar"></div>
+      <div class="pane" id="mainScroll"></div>
+      <div class="foot" id="footer" style="display:none"></div>
+    </section>
+
+    <aside class="col-side" id="coach-side">
+      <div class="panel-h">
+        <h2>Please check</h2>
+        <p id="sideSub">Nothing to confirm yet</p>
+      </div>
+      <div class="pane" id="sideScroll"></div>
+    </aside>
+  </div>
+</div>
+
+<div class="cm-root" id="tour">
+  <div class="cm-block"></div>
+  <div class="cm-hole" id="cmHole"></div>
+  <div class="cm-card" id="cmCard"></div>
+</div>
+
+<div class="overlay" id="modal"></div>
+<div id="coachRoot">
+  <div class="coach-dim" id="coachDim"></div>
+  <div class="coach-spot" id="coachSpot"></div>
+  <div class="coach-card" id="coachCard"></div>
+</div>
+<div id="toast"></div>
+
+<script>
+const INSUREDS = [
+  { name: "Tata Motors Ltd.", gstn: "27AAACT2727Q1ZW", type: "Corporate Fleet", contact: "fleet.insurance@tatamotors.com" },
+  { name: "Mahindra Logistics Ltd.", gstn: "27AAACM1234P1Z5", type: "Corporate Fleet", contact: "insurance@mahindralogistics.com" },
+  { name: "Blue Dart Express Ltd.", gstn: "27AABCB5678Q1Z2", type: "Corporate Fleet", contact: "risk@bluedart.com" },
+];
+
+function inr(n) {
+  const sign = n < 0 ? "−" : "";
+  return sign + "₹ " + Math.abs(Math.round(n)).toLocaleString("en-IN");
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+}
+function nowTime() {
+  return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function blankRecord() {
+  return {
+    id: "101230",
+    insured: "",
+    insuredGSTN: "",
+    insuredType: "Corporate Fleet",
+    contact: "",
+    vehicleCount: 35,
+    vehicleType: "Commercial — Goods Carrying",
+    make: "TATA",
+    model: "LPT 1613",
+    yearOfMfg: 2022,
+    fuelType: "Diesel",
+    rtoCode: "MH-01",
+    rtoCity: "Mumbai Central",
+    zone: "Zone A",
+    idvTotal: 28000000,
+    fromDate: "2025-04-01",
+    thruDate: "2026-03-31",
+    selectedQuote: "package",
+    extras: { nilDep: false, engineProtect: false, rsa: false, ncbProtect: false, paCover: true },
+    loadingPct: 0,
+    ncbPct: 20,
+    vehicleReady: false,
+    partiesReady: false,
+    quotesReady: false,
+    vahanConsent: false,
+    iibConsent: false,
+    iibSkipped: false,
+    loadingApplied: false,
+    submitted: false,
+    claimsCount: 3,
+    claimsIncurred: 420000,
+    lossRatio: 62,
+  };
+}
+
+const state = {
+  tour: 0,
+  step: "start",
+  fetching: null,
+  suggestOpen: false,
+  help: [],
+  audit: [],
+  auditOpen: false,
+  cite: null,
+  savedLabel: "",
+  intel: { loading: "open", referral: "open", docs: "open", ncb: "info" },
+  record: blankRecord(),
+  draft: { insured: "", gstn: "", rto: "MH-01", count: 35 },
+};
+
+const STEPS = [
+  { id: "start", label: "Start" },
+  { id: "vehicle", label: "Vehicle" },
+  { id: "parties", label: "Insured" },
+  { id: "quotes", label: "Cover & premium" },
+  { id: "submit", label: "Submit" },
+];
+
+function currentStepIndex() {
+  const r = state.record;
+  if (r.submitted) return 4;
+  if (r.quotesReady) return 3;
+  if (r.partiesReady) return 2;
+  if (r.vehicleReady) return 1;
+  return 0;
+}
+
+function premium() {
+  const r = state.record;
+  const idv = r.idvTotal;
+  const count = r.vehicleCount;
+  const plan = r.selectedQuote;
+  const lines = [];
+  let odBase = 0;
+  if (plan === "tp_only") {
+    lines.push({ id: "tp", label: "Third-party liability", amount: 7800 * count });
+    if (r.extras.paCover) lines.push({ id: "pa", label: "PA cover (owner-driver)", amount: 330 * count });
+  } else {
+    odBase = idv * 0.025;
+    const od = r.loadingPct ? odBase * (1 + r.loadingPct / 100) : odBase;
+    lines.push({ id: "od", label: r.loadingPct ? `Own damage (+${r.loadingPct}% loading)` : "Own damage (2.5% of IDV)", amount: od });
+    lines.push({ id: "tp", label: "Third-party liability", amount: 7800 * count });
+    if (r.extras.paCover) lines.push({ id: "pa", label: "PA cover (owner-driver)", amount: 330 * count });
+    const extrasOn = plan === "package_plus";
+    if (extrasOn || r.extras.nilDep) lines.push({ id: "nil", label: "Nil depreciation", amount: odBase * 0.15 });
+    if (extrasOn || r.extras.engineProtect) lines.push({ id: "eng", label: "Engine protect", amount: odBase * 0.12 });
+    if (extrasOn || r.extras.rsa) lines.push({ id: "rsa", label: "Roadside assistance", amount: 850 * count });
+    if (extrasOn || r.extras.ncbProtect) lines.push({ id: "ncbp", label: "NCB protect", amount: odBase * 0.08 });
+    lines.push({ id: "ncb", label: `NCB discount (${r.ncbPct}%)`, amount: -(od * r.ncbPct / 100) });
+  }
+  const subtotal = lines.reduce((s, l) => s + l.amount, 0);
+  const gst = subtotal * 0.18;
+  return { lines, subtotal, gst, total: subtotal + gst, odBase };
+}
+
+function quoteTotal(id) {
+  const prev = state.record.selectedQuote;
+  state.record.selectedQuote = id;
+  const t = premium().total;
+  state.record.selectedQuote = prev;
+  return t;
+}
+
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.style.display = "block";
+  clearTimeout(state.toastTimer);
+  state.toastTimer = setTimeout(() => { el.style.display = "none"; }, 2400);
+}
+
+function logAudit(action, detail, extra = {}) {
+  state.audit.push({ time: nowTime(), action, detail, ...extra });
+  state.savedLabel = "Saved just now";
+}
+
+function rtoMeta(code) {
+  const map = {
+    "MH-01": { city: "Mumbai Central", zone: "Zone A" },
+    "DL-01": { city: "Delhi", zone: "Zone A" },
+    "KA-01": { city: "Bengaluru", zone: "Zone A" },
+    "TN-01": { city: "Chennai", zone: "Zone A" },
+  };
+  return map[code] || map["MH-01"];
+}
+
+/* ---------- render ---------- */
+function render() {
+  document.getElementById("appRoot").classList.toggle("is-landing", currentStepIndex() === 0 && !state.fetching);
+  renderHeader();
+  renderStepper();
+  renderGuide();
+  renderMain();
+  renderSide();
+  renderModal();
+  renderTour();
+}
+
+function renderHeader() {
+  const r = state.record;
+  const meta = document.getElementById("recordMeta");
+  if (state.step === "start" && !r.vehicleReady) {
+    meta.innerHTML = `<span class="pill pill-idle">No application yet</span>`;
+  } else {
+    const st = r.submitted ? ["Submitted", "pill-done"] : ["Draft", "pill-draft"];
+    meta.innerHTML = `
+      <span style="font-size:13px;color:var(--ink-500)">App <strong style="font-family:ui-monospace,monospace;color:var(--ink-900)">${r.id}</strong></span>
+      <span class="pill ${st[1]}" style="margin-left:8px">${st[0]}</span>
+      ${state.savedLabel ? `<span style="margin-left:8px;font-size:12px;color:var(--ink-400)">${state.savedLabel}</span>` : ""}`;
+  }
+}
+
+/* ---------- coachmark tour ---------- */
+const TOUR = [
+  { title: "This is still an insurance application", map: "all",
+    body: "The same motor proposal you fill today. One difference: the system can fetch vehicle and company details for you — and you check them before they stick." },
+  { title: "Five steps, in order", target: "#stepperBar", place: "bottom", map: "stepper", pad: 2,
+    body: "Start → Vehicle → Insured → Cover &amp; premium → Submit. The bar always shows where this application stands." },
+  { title: "What to do next sits here", target: ".col-guide", place: "right", map: "left", pad: 0,
+    body: "Plain instructions, and the buttons that move the file forward. There is no chat box to fill — you never have to write a prompt." },
+  { title: "The form is in the middle", target: ".landing-card", place: "right", map: "center", pad: 8,
+    body: "Company, GSTN, RTO, vehicle count — the details you already take on a call. Every field stays editable at every step." },
+  { title: "One button fills the fleet", target: "[data-act=\"lookup\"]", place: "right", map: "button", pad: 6,
+    body: "Look up pulls make, model, year and RTO from VAHAN, the national registry, for all 35 vehicles. It fetches a record; it does not guess one." },
+  { title: "Things to check, on the right", target: ".col-side", place: "left", map: "right", pad: 0,
+    body: "Suggestions and referrals land here — OD loading, Branch Manager approval, documents still needed. Each one is your call, and “no” is a valid answer." },
+  { title: "Every step is logged", target: "#auditBtn", place: "bottom", map: "header", pad: 6,
+    body: "The activity log records each lookup and each edit — old value, new value, time — in language you can hand to audit." },
+  { title: "That is the whole screen", map: "all", final: true,
+    body: "Start typing a company name, or load the Tata Motors demo fleet to walk the flow end to end." },
+];
+
+function cmArt(map) {
+  const on = k => map === k;
+  const f = k => on(k) ? "#FFFFFF" : "rgba(255,255,255,.20)";
+  const st = k => on(k) ? "rgba(255,255,255,.95)" : "rgba(255,255,255,.30)";
+  const w = k => on(k) ? 1.8 : 1;
+  const ink = k => on(k) ? "#0F766E" : "rgba(255,255,255,.55)";
+  const all = on("all");
+  const dots = [0,1,2,3,4].map(i =>
+    `<circle cx="${34 + i * 46}" cy="33.5" r="3.4" fill="${on("stepper") ? "#0F766E" : "rgba(255,255,255,.5)"}"/>`).join("");
+  const rows = [50,58,66].map(y =>
+    `<rect x="86" y="${y}" width="${y === 66 ? 52 : 92}" height="4" rx="2" fill="${ink("center")}" opacity=".8"/>`).join("");
+  return `<svg viewBox="0 0 268 96" width="100%" height="96" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect x="8" y="6" width="252" height="84" rx="9" fill="rgba(255,255,255,.12)"
+      stroke="${all ? "rgba(255,255,255,.95)" : "rgba(255,255,255,.28)"}" stroke-width="${all ? 2 : 1}"/>
+    <rect x="16" y="13" width="236" height="13" rx="4" fill="${f("header")}" stroke="${st("header")}" stroke-width="${w("header")}"/>
+    <rect x="21" y="17" width="26" height="5" rx="2.5" fill="${ink("header")}" opacity=".7"/>
+    <rect x="225" y="17" width="22" height="5" rx="2.5" fill="${on("header") ? "#0F766E" : "rgba(255,255,255,.5)"}"/>
+    <rect x="16" y="28" width="236" height="11" rx="4" fill="${f("stepper")}" stroke="${st("stepper")}" stroke-width="${w("stepper")}"/>
+    ${dots}
+    <rect x="16" y="42" width="58" height="40" rx="5" fill="${f("left")}" stroke="${st("left")}" stroke-width="${w("left")}"/>
+    <rect x="22" y="48" width="40" height="4" rx="2" fill="${ink("left")}" opacity=".8"/>
+    <rect x="22" y="55" width="46" height="4" rx="2" fill="${ink("left")}" opacity=".55"/>
+    <rect x="22" y="70" width="46" height="8" rx="4" fill="${ink("left")}" opacity=".8"/>
+    <rect x="78" y="42" width="108" height="40" rx="5" fill="${f("center") || f("button")}" stroke="${on("button") ? "rgba(255,255,255,.55)" : st("center")}" stroke-width="${w("center")}"/>
+    ${rows}
+    <rect x="86" y="70" width="92" height="9" rx="4.5" fill="${on("button") ? "#0F766E" : (on("center") ? "#0D9488" : "rgba(255,255,255,.5)")}"
+      stroke="${on("button") ? "#FFFFFF" : "none"}" stroke-width="${on("button") ? 2 : 0}"/>
+    <rect x="190" y="42" width="62" height="40" rx="5" fill="${f("right")}" stroke="${st("right")}" stroke-width="${w("right")}"/>
+    <rect x="196" y="48" width="34" height="4" rx="2" fill="${ink("right")}" opacity=".8"/>
+    <rect x="196" y="55" width="50" height="4" rx="2" fill="${ink("right")}" opacity=".55"/>
+    <rect x="196" y="62" width="44" height="4" rx="2" fill="${ink("right")}" opacity=".55"/>
+  </svg>`;
+}
+
+function renderTour() {
+  const root = document.getElementById("tour");
+  const active = state.tour !== null && state.tour >= 0 && state.tour < TOUR.length;
+  root.classList.toggle("show", active);
+  if (!active) return;
+  const i = state.tour;
+  const s = TOUR[i];
+  const dots = TOUR.map((_, k) => `<i class="${k === i ? "on" : ""}"></i>`).join("");
+  const actions = s.final
+    ? `<button class="cm-btn cm-ghost" type="button" data-act="tour-done">Start blank</button>
+       <button class="cm-btn cm-solid" type="button" data-act="tour-demo">Use demo fleet →</button>`
+    : `<button class="cm-btn cm-ghost" type="button" data-act="tour-skip">Skip tour</button>
+       <button class="cm-btn cm-solid" type="button" data-act="tour-next">Next →</button>`;
+  document.getElementById("cmCard").innerHTML = `
+    <div class="cm-art">${cmArt(s.map)}</div>
+    <div class="cm-body">
+      <div class="cm-head">
+        <h4>${s.title}</h4>
+        <span class="cm-count">${i + 1} of ${TOUR.length}</span>
+      </div>
+      <p>${s.body}</p>
+      <div class="cm-dots">${dots}</div>
+      <div class="cm-acts">
+        ${i > 0 ? `<button class="cm-text" type="button" data-act="tour-back">Back</button>` : ""}
+        ${actions}
+      </div>
+    </div>`;
+  placeCoachmark();
+}
+
+function placeCoachmark() {
+  const s = TOUR[state.tour];
+  const hole = document.getElementById("cmHole");
+  const card = document.getElementById("cmCard");
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const cw = card.offsetWidth || 344, ch = card.offsetHeight || 300;
+  const el = s.target ? document.querySelector(s.target) : null;
+
+  if (!el) {
+    hole.classList.add("no-ring");
+    hole.style.left = (vw / 2) + "px";
+    hole.style.top = (vh / 2) + "px";
+    hole.style.width = "0px";
+    hole.style.height = "0px";
+    card.style.left = Math.round((vw - cw) / 2) + "px";
+    card.style.top = Math.round((vh - ch) / 2) + "px";
+    return;
+  }
+
+  hole.classList.remove("no-ring");
+  const pad = s.pad === undefined ? 6 : s.pad;
+  const r = el.getBoundingClientRect();
+  const hx = r.left - pad, hy = r.top - pad, hw = r.width + pad * 2, hh = r.height + pad * 2;
+  hole.style.left = hx + "px";
+  hole.style.top = hy + "px";
+  hole.style.width = hw + "px";
+  hole.style.height = hh + "px";
+
+  const gap = 16, m = 16;
+  const fits = {
+    right: hx + hw + gap + cw <= vw - m,
+    left: hx - gap - cw >= m,
+    bottom: hy + hh + gap + ch <= vh - m,
+    top: hy - gap - ch >= m,
+  };
+  const order = [s.place || "bottom", "bottom", "right", "left", "top"];
+  const side = order.find(k => fits[k]) || "bottom";
+
+  let left, top;
+  if (side === "right" || side === "left") {
+    left = side === "right" ? hx + hw + gap : hx - gap - cw;
+    top = hy + hh / 2 - ch / 2;
+  } else {
+    top = side === "bottom" ? hy + hh + gap : hy - gap - ch;
+    left = hx + hw / 2 - cw / 2;
+  }
+  card.style.left = Math.round(Math.min(Math.max(left, m), vw - cw - m)) + "px";
+  card.style.top = Math.round(Math.min(Math.max(top, m), vh - ch - m)) + "px";
+}
+
+function tourGo(n) {
+  if (n >= TOUR.length) { endTour(false); return; }
+  state.tour = Math.max(0, n);
+  document.getElementById("cmCard").classList.remove("cm-pop");
+  render();
+  const c = document.getElementById("cmCard");
+  void c.offsetWidth;
+  c.classList.add("cm-pop");
+}
+
+function endTour(skipped) {
+  state.tour = null;
+  if (skipped) toast("Tour skipped — Replay tour is in the top bar");
+  render();
+}
+
+function renderStepper() {
+  const idx = currentStepIndex();
+  const parts = [];
+  STEPS.forEach((s, i) => {
+    if (i > 0) parts.push(`<div class="step-line ${i <= idx ? "done" : ""}"></div>`);
+    const cls = i < idx ? "done" : i === idx ? "current" : "";
+    const mark = i < idx ? "✓" : (i + 1);
+    parts.push(`<div class="step ${cls}"><span class="n">${mark}</span><span>${s.label}</span></div>`);
+  });
+  document.getElementById("stepperBar").innerHTML = `<div class="steps">${parts.join("")}</div>`;
+}
+
+function renderGuide() {
+  const idx = currentStepIndex();
+  const titles = [
+    ["Start here", "The form is in the middle. Fill what you know — no need to write to the AI."],
+    ["Check the vehicles", "Details came from VAHAN. Change anything that looks wrong."],
+    ["Check the insured", "Company details are filled. Confirm before we price the fleet."],
+    ["Choose cover", "Pick a plan. Add-ons update the premium as you click."],
+    ["Submitted", "Application is with the Branch Manager."],
+  ];
+  const t = titles[idx];
+  document.getElementById("guideTitle").textContent = t[0];
+  document.getElementById("guideSub").textContent = t[1];
+
+  let body = "";
+  if (idx === 0) body = landingGuideHtml();
+  else if (idx === 1) body = vehicleGuideHtml();
+  else if (idx === 2) body = partiesGuideHtml();
+  else if (idx === 3) body = quotesGuideHtml();
+  else body = `<p style="font-size:14px;color:var(--ink-700)">Nothing more to enter. Use <strong>Activity log</strong> if you need the trail for IRDAI.</p>`;
+
+  document.getElementById("guideScroll").innerHTML = body + (idx === 0 ? "" : helpHtml());
+}
+
+function landingGuideHtml() {
+  return `
+    <p style="font-size:14px;color:var(--ink-700);margin-bottom:12px">1. Company, GSTN, RTO, vehicle count.<br>2. Look up fleet — or type it yourself.<br>3. Check every field before it sticks.</p>
+    <div class="demo">
+      <p>In a demo, skip typing:</p>
+      <button class="chip" type="button" data-act="use-demo">Use Tata Motors · 35 vehicles · Mumbai</button>
+    </div>
+    <div style="margin-top:16px">
+      <div style="font-size:12px;font-weight:600;color:var(--ink-500);margin-bottom:6px">Optional help</div>
+      <div class="faq-row">${faqButtons()}</div>
+    </div>`;
+}
+
+function startFormHtml() {
+  const d = state.draft;
+  const q = d.insured.trim().toLowerCase();
+  const matches = q.length >= 2 ? INSUREDS.filter(i => i.name.toLowerCase().includes(q) || i.gstn.toLowerCase().includes(q)) : [];
+  return `
+    <label class="fld">
+      <span class="l">Insured company</span>
+      <input class="inp" id="insuredInput" value="${escapeHtml(d.insured)}" placeholder="e.g. Tata Motors Ltd." autocomplete="off" />
+      ${state.suggestOpen && matches.length ? `<div class="suggest">${matches.map(m =>
+        `<button type="button" data-act="pick-insured" data-gstn="${m.gstn}">
+          ${escapeHtml(m.name)}<small>${m.gstn} · ${m.type}</small>
+        </button>`).join("")}</div>` : ""}
+      <span class="hint">Start typing — we will suggest companies already in AZIC.</span>
+    </label>
+    <label class="fld">
+      <span class="l">GSTN <span style="font-weight:400;color:var(--ink-400)">(optional)</span></span>
+      <input class="inp" id="gstnInput" value="${escapeHtml(d.gstn)}" placeholder="27AAACT2727Q1ZW" />
+    </label>
+    <div class="row-2">
+      <label class="fld">
+        <span class="l">RTO</span>
+        <select class="inp" id="rtoInput">
+          <option value="MH-01" ${d.rto==="MH-01"?"selected":""}>MH-01 · Mumbai</option>
+          <option value="DL-01" ${d.rto==="DL-01"?"selected":""}>DL-01 · Delhi</option>
+          <option value="KA-01" ${d.rto==="KA-01"?"selected":""}>KA-01 · Bengaluru</option>
+          <option value="TN-01" ${d.rto==="TN-01"?"selected":""}>TN-01 · Chennai</option>
+        </select>
+      </label>
+      <label class="fld">
+        <span class="l">No. of vehicles</span>
+        <input class="inp" id="countInput" type="number" min="1" max="500" value="${d.count}" />
+      </label>
+    </div>
+    <div class="stack">
+      <button class="btn btn-primary" type="button" data-act="lookup">${state.fetching === "vahan" ? `<span class="spin"></span> Looking up VAHAN…` : "Look up fleet in VAHAN"}</button>
+      <button class="btn btn-sec" type="button" data-act="manual">I’ll type vehicle details myself</button>
+    </div>`;
+}
+
+function vehicleGuideHtml() {
+  return `
+    <p style="font-size:14px;color:var(--ink-700);margin-bottom:12px">Open each field on the right if you need to correct make, count, or IDV. When it matches the proposal, continue.</p>
+    <div class="stack">
+      <button class="btn btn-primary" type="button" data-act="confirm-vehicle">Vehicles look right — continue</button>
+      <button class="btn btn-sec" type="button" data-act="refetch">Look up VAHAN again</button>
+    </div>`;
+}
+
+function partiesGuideHtml() {
+  const r = state.record;
+  return `
+    <p style="font-size:14px;color:var(--ink-700);margin-bottom:12px">${escapeHtml(r.insured)} is on the application. Next we can confirm claims history at IIB so NCB is not just declared.</p>
+    <div class="stack">
+      <button class="btn btn-primary" type="button" data-act="ask-iib">Check IIB claims history</button>
+      <button class="btn btn-sec" type="button" data-act="skip-iib">Skip for now — use declared NCB 20%</button>
+    </div>`;
+}
+
+function quotesGuideHtml() {
+  return `
+    <p style="font-size:14px;color:var(--ink-700);margin-bottom:10px">Click a plan in the middle. Add-ons update the premium as you click.</p>
+    <div class="faq-row">${faqButtons()}</div>
+    <label class="fld" style="margin-top:10px">
+      <span class="l">Ask a question</span>
+      <input class="inp" id="askInput" placeholder="e.g. What is nil depreciation?" />
+    </label>
+    <button class="btn btn-sec btn-sm" type="button" data-act="ask-send" style="width:100%">Ask</button>`;
+}
+
+function faqButtons() {
+  const qs = [
+    ["What is VAHAN?", "vahan"],
+    ["What is NCB?", "ncb"],
+    ["Why Branch Manager approval?", "referral"],
+    ["What is OD loading?", "loading"],
+  ];
+  return qs.map(([l, id]) => `<button class="help-q" type="button" data-act="faq" data-id="${id}">${l}</button>`).join("");
+}
+
+function helpHtml() {
+  if (currentStepIndex() === 0 || currentStepIndex() === 3) return "";
+  const bits = state.help.map(m => m.who === "user"
+    ? `<div class="msg-user">${escapeHtml(m.text)}</div>`
+    : `<div class="msg-ai">${m.html || escapeHtml(m.text)}</div>`
+  ).join("");
+  return `
+    <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--ink-200)">
+      <div style="font-size:12px;font-weight:600;color:var(--ink-500);margin-bottom:6px">Optional help</div>
+      ${bits}
+      <div class="faq-row">${faqButtons()}</div>
+    </div>`;
+}
+
+function renderMain() {
+  const r = state.record;
+  const idx = currentStepIndex();
+  const bar = document.getElementById("mainBar");
+  const used = [];
+  if (r.vahanConsent) used.push("VAHAN");
+  if (r.iibConsent) used.push("IIB");
+  bar.innerHTML = `
+    <span>Application record</span>
+    <span style="margin-left:auto;display:flex;gap:6px">${used.map(u => `<span class="src">${u} filled</span>`).join("")}</span>`;
+
+  const scroll = document.getElementById("mainScroll");
+  const foot = document.getElementById("footer");
+
+  if (idx === 0 && !state.fetching) {
+    scroll.innerHTML = `<div class="landing-page">
+      <div class="card landing-card">
+        <h3>New motor commercial application</h3>
+        <p class="meta" style="margin-bottom:14px">Enter the company and RTO. Look up fills the rest — you check it before it sticks.</p>
+        ${startFormHtml()}
+      </div>
+    </div>`;
+    foot.style.display = "none";
+    return;
+  }
+
+  if (state.fetching === "vahan") {
+    scroll.innerHTML = `<div class="empty"><h2>Fetching from VAHAN…</h2><p>Looking up ${state.draft.count} vehicles at ${state.draft.rto}. This is logged on the application.</p></div>`;
+    foot.style.display = "none";
+    return;
+  }
+
+  let html = "";
+  if (r.vehicleReady || state.fetching) html += headerCard() + vehicleCard();
+  if (r.partiesReady) html += partiesCard();
+  if (r.quotesReady) html += quotesCard() + premiumCard();
+  else if (r.partiesReady) html += `<div class="card" style="border-left-color:var(--ink-300);border-style:dashed">
+    <h3>Cover & premium</h3>
+    <p class="meta">Appears after you check the insured on the left.</p>
+  </div>`;
+
+  scroll.innerHTML = `<div class="fade" style="max-width:860px;margin:0 auto">${html}</div>`;
+
+  if (r.quotesReady && !r.submitted) {
+    const p = premium();
+    foot.style.display = "flex";
+    foot.innerHTML = `
+      <div>
+        <div style="font-weight:600">Submit for Branch Manager approval</div>
+        <div style="font-size:12px;color:var(--ink-500)">Fleet of ${r.vehicleCount} in ${r.zone} needs a referral. You can still edit cover before sending.</div>
+      </div>
+      <div style="margin-left:auto;font-size:18px;font-weight:700">${inr(p.total)}</div>
+      <button class="btn btn-navy btn-sm" type="button" data-act="submit">Submit application</button>`;
+  } else if (r.submitted) {
+    foot.style.display = "flex";
+    foot.innerHTML = `<div><div style="font-weight:600">Application ${r.id} submitted</div><div style="font-size:12px;color:var(--ink-500)">Waiting on Rakesh Mehta, Branch Manager · Mumbai.</div></div>
+      <span class="pill pill-done" style="margin-left:auto">In approval queue</span>`;
+  } else {
+    foot.style.display = "none";
+  }
+}
+
+function headerCard() {
+  const r = state.record;
+  return `<div class="card">
+    <div class="meta">NEW MOTOR COMMERCIAL</div>
+    <h3>${r.insured || "Insured to be confirmed"} — ${r.vehicleCount} vehicles</h3>
+    <p class="meta">App ${r.id} · ${r.rtoCode} ${r.rtoCity} · ${fmtDate(r.fromDate)} to ${fmtDate(r.thruDate)}</p>
+  </div>`;
+}
+
+function fmtDate(iso) {
+  if (!iso) return "";
+  const [y,m,d] = iso.split("-");
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `${d}-${months[Number(m)-1]}-${y}`;
+}
+
+function field(label, key, value, extra = "") {
+  return `<label class="fld" style="margin:0">
+    <span class="l">${label} ${extra}</span>
+    <input class="inp" data-field="${key}" value="${escapeHtml(value)}" />
+  </label>`;
+}
+
+function vehicleCard() {
+  const r = state.record;
+  const badge = r.vahanConsent
+    ? `<span class="src">Filled from VAHAN — please check</span>`
+    : `<span class="src" style="background:#FFFBEB;color:#92400E;border-color:#FDE68A">Typed by you</span>`;
+  return `<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <h3>Vehicle & registration</h3>${badge}
+    </div>
+    ${r.vahanConsent ? `<div class="banner" style="margin-top:12px">Check make, count and IDV against the proposal. Click a field to correct it — you do not need to ask the AI.</div>` : ""}
+    <div class="grid">
+      ${field("Make", "make", r.make)}
+      ${field("Model", "model", r.model)}
+      ${field("Year of manufacture", "yearOfMfg", r.yearOfMfg)}
+      ${field("Fuel", "fuelType", r.fuelType)}
+      ${field("Vehicle type", "vehicleType", r.vehicleType)}
+      ${field("Number of vehicles", "vehicleCount", r.vehicleCount)}
+      ${field("RTO", "rtoCode", r.rtoCode)}
+      <label class="fld" style="margin:0">
+        <span class="l">City / zone</span>
+        <div class="inp" style="display:flex;align-items:center;background:var(--ink-50);color:var(--ink-700)">${escapeHtml(r.rtoCity)} · ${escapeHtml(r.zone)}</div>
+      </label>
+      ${field("IDV total (₹)", "idvTotal", r.idvTotal)}
+      ${field("Policy from", "fromDate", r.fromDate)}
+    </div>
+  </div>`;
+}
+
+function partiesCard() {
+  const r = state.record;
+  const lrColor = r.lossRatio < 60 ? "#047857" : r.lossRatio < 80 ? "#B45309" : "#B91C1C";
+  const iib = r.iibConsent
+    ? `<div class="banner" style="margin-top:12px">IIB: ${r.claimsCount} claims in 3 years · incurred ${inr(r.claimsIncurred)} · loss ratio <strong style="color:${lrColor}">${r.lossRatio}%</strong>. Within appetite.</div>`
+    : `<div class="banner warn" style="margin-top:12px">Claims history not fetched. NCB 20% is as declared by the insured.</div>`;
+  return `<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h3>Insured party</h3>
+      <span class="src">AZIC party master</span>
+    </div>
+    ${iib}
+    <div class="grid">
+      ${field("Company name", "insured", r.insured)}
+      ${field("GSTN", "insuredGSTN", r.insuredGSTN)}
+      ${field("Insured type", "insuredType", r.insuredType)}
+      ${field("Contact", "contact", r.contact)}
+    </div>
+  </div>`;
+}
+
+function quotesCard() {
+  const r = state.record;
+  const plans = [
+    ["tp_only", "TP only", "Third party"],
+    ["package", "Package", "Comprehensive · recommended"],
+    ["package_plus", "Package+", "Comprehensive + all add-ons"],
+  ];
+  const extrasOff = r.selectedQuote === "package_plus";
+  return `<div class="card">
+    <h3>Choose a plan</h3>
+    <p class="meta">Click a card. Premium on the right updates immediately.</p>
+    <div class="plans">${plans.map(([id, name, tag]) => `
+      <button class="plan ${r.selectedQuote===id?"on":""}" type="button" data-act="select-quote" data-id="${id}">
+        ${id==="package"?`<div class="src" style="margin-bottom:6px">Recommended for fleet</div>`:""}
+        <div style="font-weight:600">${name}</div>
+        <div class="meta">${tag}</div>
+        <div class="price">${inr(quoteTotal(id))}</div>
+        <div class="meta">a year, incl. GST</div>
+      </button>`).join("")}</div>
+    ${r.selectedQuote !== "tp_only" ? `
+    <div style="margin-top:8px">
+      ${addonRow("nilDep", "Nil depreciation", "New parts, no wear deduction", extrasOff)}
+      ${addonRow("engineProtect", "Engine protect", "12% of OD base", extrasOff)}
+      ${addonRow("rsa", "Roadside assistance", "₹ 850 per vehicle", extrasOff)}
+      ${addonRow("ncbProtect", "NCB protect", "Keeps bonus after a claim", extrasOff)}
+      ${addonRow("paCover", "PA cover", "IRDAI owner-driver", false)}
+    </div>` : ""}
+  </div>`;
+}
+
+function addonRow(key, label, hint, locked) {
+  const on = locked || state.record.extras[key];
+  return `<div class="addon">
+    <div><strong>${label}</strong><div class="meta">${hint}${locked ? " · included in Package+" : ""}</div></div>
+    <button class="toggle ${on?"on":""}" type="button" data-act="toggle-extra" data-id="${key}" ${locked?"disabled":""}><i></i></button>
+  </div>`;
+}
+
+function premiumCard() {
+  const p = premium();
+  const r = state.record;
+  const names = { tp_only: "TP only", package: "Package", package_plus: "Package+" };
+  return `<div class="card">
+    <h3>Premium — ${names[r.selectedQuote]}</h3>
+    <p class="meta">INR · annual · GST 18%</p>
+    ${p.lines.map(l => `<div class="line ${l.amount<0?"neg":""}"><span>${l.label}</span><span>${inr(l.amount)}</span></div>`).join("")}
+    <div class="line"><span>Subtotal</span><span>${inr(p.subtotal)}</span></div>
+    <div class="line"><span>GST 18%</span><span>${inr(p.gst)}</span></div>
+    <div class="total"><span>Total premium</span><span>${inr(p.total)}</span></div>
+  </div>`;
+}
+
+function renderSide() {
+  const box = document.getElementById("sideScroll");
+  const sub = document.getElementById("sideSub");
+  const r = state.record;
+  const idx = currentStepIndex();
+  if (idx === 0) {
+    sub.textContent = "Nothing to confirm yet";
+    box.innerHTML = `<div class="attn"><div class="tag">FYI</div><h4>What we may look up</h4><p>VAHAN (vehicles), IIB (claims), GSTN in the party master. Each lookup is written to the activity log. Nothing is silent.</p></div>`;
+    return;
+  }
+  sub.textContent = "For application " + r.id;
+  const cards = [];
+  if (r.vehicleReady && !r.partiesReady) {
+    cards.push(attn("need", "Please confirm", "Vehicle details", "Compare with the proposal. If count or IDV is wrong, edit the field in the middle, then continue."));
+  }
+  if (r.partiesReady && !r.quotesReady) {
+    cards.push(attn("need", "Please confirm", "Insured party", r.iibConsent ? "IIB has confirmed claims history." : "You can skip IIB and still quote, with NCB as declared."));
+  }
+  if (r.quotesReady) {
+    if (state.intel.referral === "open") {
+      cards.push(attn("need", "Needs you", "Branch Manager referral", "35 vehicles in Zone A (Mumbai). You cannot bind this yourself. Submit sends it to Rakesh Mehta.", `
+        <button class="btn btn-sec btn-sm" type="button" data-act="faq" data-id="referral">Why?</button>`));
+    }
+    if (state.intel.loading === "open" && !r.loadingApplied && r.selectedQuote !== "tp_only") {
+      const cur = premium();
+      const prev = r.loadingPct;
+      r.loadingPct = 5;
+      const next = premium();
+      r.loadingPct = prev;
+      cards.push(attn("need", "Suggestion — your call", "+5% own-damage loading",
+        `Zone A fleet risk. Premium would change from ${inr(cur.total)} to ${inr(next.total)}.`,
+        `<div class="stack" style="margin-top:10px">
+          <button class="btn btn-navy btn-sm" type="button" data-act="apply-loading">Add 5% loading</button>
+          <button class="btn btn-sec btn-sm" type="button" data-act="skip-loading">Keep premium as is</button>
+          <button class="btn btn-sec btn-sm" type="button" data-act="faq" data-id="loading">Explain this</button>
+        </div>`));
+    }
+    if (state.intel.ncb === "info") {
+      cards.push(attn("", "FYI", "NCB 20%", r.iibConsent ? "IIB confirmed. Already taken off own-damage premium." : "Declared, not verified. Already in the Package premium."));
+    }
+    if (state.intel.docs === "open") {
+      cards.push(attn("", "FYI", "Documents still needed", "Fleet RC, GSTN certificate, previous policy copy. You can submit and collect these in parallel.",
+        `<button class="btn btn-sec btn-sm" type="button" data-act="docs-later" style="margin-top:8px">I’ll collect these later</button>`));
+    }
+  }
+  if (r.submitted) {
+    cards.push(attn("", "FYI", "Waiting on Branch Manager", "Typical turnaround 2–4 hours. You will get a queue notification in AZIC."));
+  }
+  box.innerHTML = cards.join("") || `<p style="font-size:13px;color:var(--ink-500)">All clear on this record.</p>`;
+}
+
+function attn(kind, tag, title, body, actions = "") {
+  return `<div class="attn ${kind}"><div class="tag">${tag}</div><h4>${title}</h4><p>${body}</p>${actions}</div>`;
+}
+
+function renderModal() {
+  const el = document.getElementById("modal");
+  if (state.cite) {
+    const c = CITES[state.cite];
+    el.className = "overlay show";
+    el.innerHTML = `<div class="modal">
+      <h3>${c.title}</h3>
+      <p>${c.body}</p>
+      <p style="font-size:12px;color:var(--ink-500)">${c.source}</p>
+      <button class="btn btn-primary" type="button" data-act="close-modal">Got it</button>
+    </div>`;
+    return;
+  }
+  if (state.auditOpen) {
+    el.className = "overlay show";
+    const rows = state.audit.length ? [...state.audit].reverse().map(a => `
+      <div class="attn"><div class="tag">${a.time}</div><h4>${escapeHtml(a.action)}</h4><p>${escapeHtml(a.detail)}</p></div>`).join("") : `<p>No activity yet.</p>`;
+    el.innerHTML = `<div class="modal" style="max-width:520px;max-height:80vh;overflow:auto">
+      <h3>Activity log</h3>
+      <p>Shown in language you can explain to audit. Model: AzentioLM.</p>
+      ${rows}
+      <button class="btn btn-primary" type="button" data-act="close-modal" style="margin-top:8px">Close</button>
+    </div>`;
+    return;
+  }
+  if (state.step === "vahan-consent") {
+    el.className = "overlay show";
+    const d = state.draft;
+    el.innerHTML = `<div class="modal">
+      <h3>Look up this fleet in VAHAN?</h3>
+      <p>We’ll fetch registration, chassis, engine and RTO for <strong>${d.count} vehicles</strong> at <strong>${d.rto}</strong>, for <strong>${escapeHtml(d.insured || "the insured")}</strong>.</p>
+      <p>This is the national vehicle registry. The lookup is written on the application. You can still edit every field afterwards.</p>
+      <div class="stack">
+        <button class="btn btn-primary" type="button" data-act="vahan-yes">Yes, fetch details</button>
+        <button class="btn btn-sec" type="button" data-act="vahan-no">No, I’ll type them</button>
+      </div>
+    </div>`;
+    return;
+  }
+  if (state.step === "iib-consent") {
+    el.className = "overlay show";
+    el.innerHTML = `<div class="modal">
+      <h3>Check claims history at IIB?</h3>
+      <p>IIB is the Insurance Information Bureau. We’ll see the last 3 years of fleet claims across insurers, so the 20% NCB is confirmed rather than only declared.</p>
+      <div class="stack">
+        <button class="btn btn-primary" type="button" data-act="iib-yes">Yes, check IIB</button>
+        <button class="btn btn-sec" type="button" data-act="iib-no">Skip — keep declared NCB</button>
+      </div>
+    </div>`;
+    return;
+  }
+  el.className = "overlay";
+  el.innerHTML = "";
+}
+
+const CITES = {
+  vahan: { title: "VAHAN", body: "VAHAN is the national vehicle registry. We use it the way you would use a registration extract — to fill make, model, year and RTO so you don’t retype 35 vehicles. You remain responsible for checking the values.", source: "VAHAN · Ministry of Road Transport" },
+  ncb: { title: "No-claim bonus (NCB)", body: "NCB is a discount on own-damage premium for years without a claim. Scale in India: 0% → 20% → 25% → 35% → 45% → 50%. This fleet has declared 20%. IIB can confirm it.", source: "IRDAI motor tariff practice" },
+  referral: { title: "Why Branch Manager?", body: "Your authority: private motor bind. This file is 35 commercial vehicles in Mumbai (Zone A). House rule: fleets over 30 units in Zone A go to Branch Manager before bind. Submitting is the same as a referral note in core AZIC.", source: "AZIC underwriting authority · Motor Commercial" },
+  loading: { title: "Own-damage loading", body: "Loading is extra premium on own damage only — not on third-party. +5% here is for Zone A traffic density on a goods-carrying fleet. You can add it, or leave the rate clean and note why in the file.", source: "Internal motor guidelines · Zone A fleet" },
+};
+
+const FAQ_A = {
+  vahan: "VAHAN is the government vehicle registry. Think of it as fetching the RC copy, not as the AI ‘guessing’ the truck.",
+  ncb: "NCB is the no-claim bonus — a discount on own-damage for claim-free years. 20% is already in the Package price.",
+  referral: "You cannot bind a 35-vehicle Mumbai fleet on your own desk. Submit sends it to the Branch Manager, same as a referral in AZIC today.",
+  loading: "Loading is extra on own-damage only. +5% for Zone A fleet is a suggestion. If you disagree, keep the premium as is — that choice is logged.",
+};
+
+function answerAsk(text) {
+  const t = text.toLowerCase();
+  if (/vahan|rc|registry|chassis/.test(t)) return FAQ_A.vahan;
+  if (/ncb|bonus|claim/.test(t)) return FAQ_A.ncb;
+  if (/branch|referral|approv|bind/.test(t)) return FAQ_A.referral;
+  if (/load|od |own damage/.test(t)) return FAQ_A.loading;
+  if (/nil|depreciat/.test(t)) return "Nil depreciation means we don’t cut the claim for wear on parts. It costs extra on Package; it is included in Package+.";
+  if (/gst|tax/.test(t)) return "GST on motor premium is 18%. It is already in the total you see.";
+  if (/idv|sum insured/.test(t)) return "IDV is the insured’s declared value for the fleet — here ₹ 2.8 crore for 35 vehicles. You can edit it on the vehicle card.";
+  return "This screen is the application itself. Change fields in the middle; use Look up for VAHAN/IIB. If you tell me which field is confusing, I can explain that one.";
+}
+
+/* ---------- actions ---------- */
+function readDraft() {
+  const ins = document.getElementById("insuredInput");
+  const gstn = document.getElementById("gstnInput");
+  const rto = document.getElementById("rtoInput");
+  const count = document.getElementById("countInput");
+  if (ins) state.draft.insured = ins.value;
+  if (gstn) state.draft.gstn = gstn.value;
+  if (rto) state.draft.rto = rto.value;
+  if (count) state.draft.count = Number(count.value) || 1;
+}
+
+function pickInsured(gstn) {
+  const m = INSUREDS.find(i => i.gstn === gstn);
+  if (!m) return;
+  state.draft.insured = m.name;
+  state.draft.gstn = m.gstn;
+  state.suggestOpen = false;
+  render();
+}
+
+function useDemo() {
+  const m = INSUREDS[0];
+  state.draft = { insured: m.name, gstn: m.gstn, rto: "MH-01", count: 35 };
+  state.suggestOpen = false;
+  toast("Demo fleet filled — click Look up fleet in VAHAN");
+  render();
+}
+
+function startLookup() {
+  readDraft();
+  if (!state.draft.insured.trim() && !state.draft.gstn.trim()) {
+    toast("Enter the company name or GSTN first");
+    return;
+  }
+  state.step = "vahan-consent";
+  render();
+}
+
+function applyDraftToRecord() {
+  const r = state.record;
+  const d = state.draft;
+  const found = INSUREDS.find(i => i.gstn === d.gstn || i.name.toLowerCase() === d.insured.trim().toLowerCase()) || INSUREDS[0];
+  r.insured = d.insured.trim() || found.name;
+  r.insuredGSTN = d.gstn.trim() || found.gstn;
+  r.contact = found.contact;
+  r.vehicleCount = d.count;
+  const meta = rtoMeta(d.rto);
+  r.rtoCode = d.rto;
+  r.rtoCity = meta.city;
+  r.zone = meta.zone;
+}
+
+function vahanYes() {
+  applyDraftToRecord();
+  state.step = "vehicle";
+  state.fetching = "vahan";
+  render();
+  setTimeout(() => {
+    state.fetching = null;
+    state.record.vehicleReady = true;
+    state.record.vahanConsent = true;
+    logAudit("VAHAN lookup", `${state.record.vehicleCount} vehicles at ${state.record.rtoCode} verified`, { source: "VAHAN" });
+    toast("Vehicle details filled — please check them");
+    render();
+  }, 1100);
+}
+
+function vahanNo() {
+  applyDraftToRecord();
+  state.step = "vehicle";
+  state.record.vehicleReady = true;
+  state.record.vahanConsent = false;
+  logAudit("Manual vehicle entry", "User chose not to use VAHAN");
+  toast("Enter the vehicle fields in the middle, then continue");
+  render();
+}
+
+function confirmVehicle() {
+  state.record.partiesReady = true;
+  logAudit("Vehicles confirmed", "Underwriter accepted vehicle card");
+  toast("Insured party is ready to confirm");
+  render();
+}
+
+function applyLoading(yes) {
+  if (yes) {
+    const from = inr(premium().total);
+    state.record.loadingPct = 5;
+    state.record.loadingApplied = true;
+    state.intel.loading = "applied";
+    logAudit("Loading applied", "+5% on own damage", { from, to: inr(premium().total) });
+    toast("Loading added. Premium updated.");
+  } else {
+    state.intel.loading = "skipped";
+    logAudit("Loading declined", "Underwriter kept base rate");
+    toast("Premium unchanged");
+  }
+  render();
+}
+
+function submitApp() {
+  state.record.submitted = true;
+  logAudit("Submitted", "Referred to Branch Manager · Mumbai");
+  toast("Application " + state.record.id + " submitted");
+  render();
+}
+
+function handleAsk() {
+  const el = document.getElementById("askInput");
+  const text = (el && el.value.trim()) || "";
+  if (!text) { toast("Type a question, or tap one below"); return; }
+  state.help.push({ who: "user", text });
+  state.help.push({ who: "ai", text: answerAsk(text) });
+  render();
+}
+
+function handleFaq(id) {
+  state.cite = id;
+  state.help.push({ who: "ai", text: FAQ_A[id] || CITES[id].body });
+  render();
+}
+
+function handleField(el) {
+  const key = el.dataset.field;
+  if (!key) return;
+  let val = el.value;
+  if (key === "vehicleCount" || key === "yearOfMfg" || key === "idvTotal") val = Number(String(val).replace(/[^\d.]/g, "")) || 0;
+  const prev = state.record[key];
+  if (key === "zone") return;
+  state.record[key] = val;
+  logAudit("You edited a field", key, { from: String(prev), to: String(val) });
+  state.savedLabel = "Saved just now";
+}
+
+function resetAll() {
+  Object.assign(state, {
+    tour: null, step: "start", fetching: null, suggestOpen: false,
+    help: [], audit: [], auditOpen: false, cite: null, savedLabel: "",
+    intel: { loading: "open", referral: "open", docs: "open", ncb: "info" },
+    record: blankRecord(),
+    draft: { insured: "", gstn: "", rto: "MH-01", count: 35 },
+  });
+  render();
+}
+
+document.body.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-act]");
+  if (!btn) {
+    if (!e.target.closest("#insuredInput, .suggest")) { state.suggestOpen = false; }
+    return;
+  }
+  const act = btn.dataset.act;
+  if (act === "tour-next") tourGo(state.tour + 1);
+  else if (act === "tour-back") tourGo(state.tour - 1);
+  else if (act === "tour-skip") endTour(true);
+  else if (act === "tour-done") endTour(false);
+  else if (act === "tour-demo") { state.tour = null; useDemo(); }
+  else if (act === "use-demo") useDemo();
+  else if (act === "pick-insured") pickInsured(btn.dataset.gstn);
+  else if (act === "lookup") startLookup();
+  else if (act === "manual") { readDraft(); if (!state.draft.insured && !state.draft.gstn) { toast("Enter the company name first"); return; } vahanNo(); }
+  else if (act === "vahan-yes") vahanYes();
+  else if (act === "vahan-no") vahanNo();
+  else if (act === "confirm-vehicle") confirmVehicle();
+  else if (act === "refetch") { state.step = "vahan-consent"; render(); }
+  else if (act === "ask-iib") { state.step = "iib-consent"; render(); }
+  else if (act === "skip-iib" || act === "iib-no") {
+    state.record.iibSkipped = true; state.record.quotesReady = true; state.step = "quotes";
+    logAudit("IIB skipped", "NCB 20% remains declared");
+    toast("Quotes are ready — pick a plan");
+    render();
+  }
+  else if (act === "iib-yes") {
+    state.record.iibConsent = true; state.record.quotesReady = true; state.step = "quotes";
+    logAudit("IIB fetched", "3 claims · loss ratio 62%");
+    toast("Claims history filled — quotes are ready");
+    render();
+  }
+  else if (act === "select-quote") {
+    state.record.selectedQuote = btn.dataset.id;
+    if (btn.dataset.id === "package_plus") {
+      Object.assign(state.record.extras, { nilDep: true, engineProtect: true, rsa: true, ncbProtect: true });
+    }
+    logAudit("Plan selected", btn.dataset.id);
+    render();
+  }
+  else if (act === "toggle-extra") {
+    const k = btn.dataset.id;
+    state.record.extras[k] = !state.record.extras[k];
+    render();
+  }
+  else if (act === "apply-loading") applyLoading(true);
+  else if (act === "skip-loading") applyLoading(false);
+  else if (act === "submit") submitApp();
+  else if (act === "docs-later") { state.intel.docs = "later"; toast("Noted — collect documents in parallel"); render(); }
+  else if (act === "faq") handleFaq(btn.dataset.id);
+  else if (act === "ask-send") handleAsk();
+  else if (act === "close-modal") { state.cite = null; state.auditOpen = false; if (state.step === "vahan-consent" || state.step === "iib-consent") {} render(); }
+});
+
+document.body.addEventListener("input", (e) => {
+  if (e.target.id === "insuredInput") {
+    readDraft();
+    state.suggestOpen = true;
+    render();
+    const el = document.getElementById("insuredInput");
+    if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+  }
+});
+
+document.body.addEventListener("change", (e) => {
+  if (e.target.dataset.field) { handleField(e.target); render(); }
+  if (["gstnInput","rtoInput","countInput"].includes(e.target.id)) readDraft();
+});
+
+document.body.addEventListener("keydown", (e) => {
+  if (state.tour !== null) {
+    if (e.key === "Escape") { e.preventDefault(); endTour(true); }
+    else if (e.key === "ArrowRight" || e.key === "Enter") { e.preventDefault(); tourGo(state.tour + 1); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); tourGo(state.tour - 1); }
+    return;
+  }
+  if (e.key === "Enter" && e.target.id === "askInput") { e.preventDefault(); handleAsk(); }
+  if (e.key === "Enter" && e.target.id === "insuredInput") {
+    e.preventDefault();
+    const q = state.draft.insured.toLowerCase();
+    const m = INSUREDS.find(i => i.name.toLowerCase().includes(q));
+    if (m) pickInsured(m.gstn);
+  }
+  if (e.key === "Escape") { state.cite = null; state.auditOpen = false; if (state.step === "vahan-consent") state.step = "start"; if (state.step === "iib-consent") state.step = "quotes"; render(); }
+});
+
+document.getElementById("resetBtn").addEventListener("click", resetAll);
+document.getElementById("tourBtn").addEventListener("click", () => { state.tour = 0; render(); });
+window.addEventListener("resize", () => { if (state.tour !== null) placeCoachmark(); });
+document.getElementById("auditBtn").addEventListener("click", () => { state.auditOpen = true; render(); });
+document.getElementById("modal").addEventListener("click", (e) => {
+  if (e.target.id === "modal") { state.cite = null; state.auditOpen = false; render(); }
+});
+
+render();
+</script>
+</body>
+</html>
